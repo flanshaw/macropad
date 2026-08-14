@@ -11,3 +11,7 @@ venv/
 .vscode/
 .idea/
 *.swp
+
+# Local post drafts, not part of the project
+docs/gh.md
+docs/red.md

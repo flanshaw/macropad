@@ -8,6 +8,10 @@ so the same three keys can be copy/paste shortcuts while coding and media
 controls the rest of the time. An always-present desktop widget shows what the
 keys currently do.
 
+<p align="center">
+  <img src="docs/images/widget.png" alt="The macropad HUD: active profile, per-key labels and bindings, and the profile list" width="480">
+</p>
+
 This is a **companion to [`ch57x-keyboard-tool`](https://github.com/kriomant/ch57x-keyboard-tool)**,
 not a replacement — all writing to the device is done by shelling out to that
 CLI, and profiles are plain `ch57x-keyboard-tool` config files.
@@ -29,20 +33,18 @@ changes, so the GUI does not need to be running for anything else to work.
 
 ### The HUD
 
-```
-┌──────────────────────────────────────────┬───────────────┐
-│ DEFAULT                                  │ PROFILES   ⚙  │
-│                                          │               │
-│  COPY      TERMINAL    FILES      VOL    │ default    ●  │
-│ ┌────────┐┌──────────┐┌─────────┐  ◯     │ media         │
-│ │ctrl-sh…││ctrl-alt-t││ctrl-alt…│        │               │
-│ └────────┘└──────────┘└─────────┘        │               │
-└──────────────────────────────────────────┴───────────────┘
-```
+The friendly **label** sits above each key (`COPY`, `TERMINAL`, `FILES`, `VOL`)
+and the raw **binding** inside the keycap (`ctrl-shift-c`, `ctrl-alt-t`, …).
+The active profile is named top-left and marked with a dot in the list. Click a
+profile name to switch to it immediately; click the gear to open the editor.
 
-The friendly **label** sits above each key, the raw **binding** inside the
-keycap. Click a profile name to switch to it immediately; click the gear to
-open the editor.
+### The editor
+
+<img src="docs/images/config.png" alt="The GTK4 editor: key diagram, per-slot label and binding fields, and validate/save/upload actions" width="720">
+
+The diagram across the top mirrors the HUD. Below it, each slot has a **Label**
+field and a **Binding** field. The sidebar is the `Super+Q` cycle order —
+reorder it with the arrows, add with **+**, remove with the bin.
 
 ---
 

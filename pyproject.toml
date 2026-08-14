@@ -1,6 +1,6 @@
 [project]
 name = "macropad-manager"
-version = "0.2.0"
+version = "0.2.1"
 description = "Layer/profile manager for CH57x 3-key + 1-knob macropad"
 requires-python = ">=3.11"
 dependencies = ["PyYAML>=6.0"]

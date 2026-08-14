@@ -3,3 +3,4 @@
 2026-08-14 Made HUD stacking runtime-configurable via hud.json, defaulting to floating above windows since Desktop Icons NG occupies the desktop layer.
 2026-08-14 Added per-key display labels stored in each profile YAML, shown in the HUD and editable in the GUI, plus runtime-configurable HUD font size.
 2026-08-14 Prepared the repo for publication with a full README, architecture/configuration/development/troubleshooting docs, MIT licence, gitignore and aligned 0.2.0 versions.
+2026-08-14 Fixed the HUD PROFILES heading clipping by disabling label ellipsis, since St ignores CSS letter-spacing when measuring natural width.

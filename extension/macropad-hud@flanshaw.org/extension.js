@@ -1,6 +1,7 @@
 import Clutter from 'gi://Clutter';
 import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
+import Pango from 'gi://Pango';
 import St from 'gi://St';
 
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
@@ -11,7 +12,7 @@ const STATE_FILE = GLib.build_filenamev([CONFIG_DIR, 'state.json']);
 const PROFILES_DIR = GLib.build_filenamev([CONFIG_DIR, 'profiles']);
 const HUD_CONFIG = GLib.build_filenamev([CONFIG_DIR, 'hud.json']);
 const MARGIN = 12;
-const HUD_VERSION = '0.2.0';
+const HUD_VERSION = '0.2.1';
 
 // Where the HUD sits in the stack, read from hud.json at runtime:
 //   'top'     - floats above normal windows, hidden by fullscreen apps.
@@ -33,6 +34,14 @@ const KNOB_SLOTS = ['knob_cw', 'knob_press', 'knob_ccw'];
 function commandPath(name) {
     return GLib.find_program_in_path(name) ??
         GLib.build_filenamev([GLib.get_home_dir(), '.local', 'bin', name]);
+}
+
+/** St does not count CSS letter-spacing when measuring a label's natural
+ *  width, so spaced text ellipsizes ("PROFIL...") even with room to grow.
+ *  Disabling ellipsis lets the label claim the width it actually needs. */
+function noEllipsis(label) {
+    label.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
+    return label;
 }
 
 function spawn(argv) {
@@ -60,7 +69,7 @@ class Hud {
             style_class: 'macropad-left',
             orientation: Clutter.Orientation.VERTICAL,
         });
-        this._title = new St.Label({style_class: 'macropad-title', text: '—'});
+        this._title = noEllipsis(new St.Label({style_class: 'macropad-title', text: '—'}));
         left.add_child(this._title);
 
         const keys = new St.BoxLayout({
@@ -82,11 +91,11 @@ class Hud {
             orientation: Clutter.Orientation.VERTICAL,
         });
         const header = new St.BoxLayout({style_class: 'macropad-header'});
-        this._heading = new St.Label({
+        this._heading = noEllipsis(new St.Label({
             style_class: 'macropad-heading',
             text: 'PROFILES',
             y_align: Clutter.ActorAlign.CENTER,
-        });
+        }));
         header.add_child(this._heading);
         const gear = new St.Button({
             style_class: 'macropad-gear',
@@ -114,21 +123,21 @@ class Hud {
             style_class: 'macropad-key',
             orientation: Clutter.Orientation.VERTICAL,
         });
-        this._keyText[slot] = new St.Label({
+        this._keyText[slot] = noEllipsis(new St.Label({
             style_class: 'macropad-keylabel',
             text: '—',
             x_align: Clutter.ActorAlign.CENTER,
-        });
+        }));
         box.add_child(this._keyText[slot]);
 
         if (isKnob) {
             box.add_child(new St.Widget({style_class: 'macropad-knobcap'}));
         } else {
-            this._capText[slot] = new St.Label({
+            this._capText[slot] = noEllipsis(new St.Label({
                 style_class: 'macropad-keycap',
                 text: '',
                 x_align: Clutter.ActorAlign.CENTER,
-            });
+            }));
             box.add_child(this._capText[slot]);
         }
         return box;
@@ -178,11 +187,11 @@ class Hud {
             const isActive = index === data.active_index;
             const row = new St.Button({style_class: 'macropad-item'});
             const box = new St.BoxLayout();
-            const name = new St.Label({
+            const name = noEllipsis(new St.Label({
                 style_class: isActive ? 'macropad-item-active' : 'macropad-item-name',
                 text: profile.name,
                 y_align: Clutter.ActorAlign.CENTER,
-            });
+            }));
             name.set_style(this._font(FONT_BASE.item));
             box.add_child(name);
             const dot = new St.Label({

@@ -50,17 +50,21 @@
   background-color: rgba(255, 255, 255, 0.18);
 }
 
+/* min-width is only a floor; the column grows to fit the heading and the
+   longest profile name, which is why labels must not ellipsize. */
 .macropad-right {
   spacing: 2px;
-  min-width: 84px;
+  min-width: 96px;
 }
 
-.macropad-header { spacing: 4px; }
+.macropad-header { spacing: 8px; }
 
 .macropad-heading {
   color: #bdbdbd;
   font-size: 8px;
   letter-spacing: 1px;
+  /* Covers the trailing letter-space St omits from its width measurement. */
+  padding-right: 2px;
 }
 
 .macropad-gear {

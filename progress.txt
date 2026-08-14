@@ -1,0 +1,5 @@
+2026-08-14 Implemented macropad-manager: GTK4/libadwaita GUI, macropad-cycle hotkey CLI, systemd user service, and Super+Q GNOME keybinding, all installed and tested against the device.
+2026-08-14 Added a GNOME Shell desktop HUD extension showing the active profile and bindings with click-to-switch, backed by new macropad-status and macropad-cycle --set commands.
+2026-08-14 Made HUD stacking runtime-configurable via hud.json, defaulting to floating above windows since Desktop Icons NG occupies the desktop layer.
+2026-08-14 Added per-key display labels stored in each profile YAML, shown in the HUD and editable in the GUI, plus runtime-configurable HUD font size.
+2026-08-14 Prepared the repo for publication with a full README, architecture/configuration/development/troubleshooting docs, MIT licence, gitignore and aligned 0.2.0 versions.

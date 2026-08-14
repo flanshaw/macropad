@@ -1,0 +1,12 @@
+[Unit]
+Description=Macropad profile restore at login
+After=graphical-session.target
+
+[Service]
+Type=oneshot
+# Re-flash the active profile so the device matches state.json after reboot.
+ExecStart=%h/.local/bin/macropad-cycle --restore
+RemainAfterExit=yes
+
+[Install]
+WantedBy=default.target

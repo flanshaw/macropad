@@ -1,0 +1,101 @@
+.macropad-hud {
+  background-color: rgba(14, 14, 14, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  padding: 8px 10px;
+  spacing: 10px;
+  color: #e8e8e8;
+}
+
+.macropad-left { spacing: 4px; }
+
+.macropad-title {
+  color: #6cb6ff;
+  font-size: 10px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  padding-bottom: 2px;
+}
+
+.macropad-keys { spacing: 8px; }
+
+.macropad-key { spacing: 2px; }
+
+.macropad-keylabel {
+  color: #d8a657;
+  font-size: 8px;
+}
+
+/* Sized by its own text (the raw binding), with a floor so empty caps
+   still read as keys. Font size is set inline from hud.json's font_delta. */
+.macropad-keycap {
+  min-width: 52px;
+  min-height: 22px;
+  padding: 2px 6px;
+  color: #9a9a9a;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 4px;
+}
+
+.macropad-knobcap {
+  width: 24px;
+  height: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 12px;
+}
+
+.macropad-divider {
+  width: 1px;
+  background-color: rgba(255, 255, 255, 0.18);
+}
+
+.macropad-right {
+  spacing: 2px;
+  min-width: 84px;
+}
+
+.macropad-header { spacing: 4px; }
+
+.macropad-heading {
+  color: #bdbdbd;
+  font-size: 8px;
+  letter-spacing: 1px;
+}
+
+.macropad-gear {
+  color: #bdbdbd;
+  border-radius: 4px;
+  padding: 1px;
+}
+
+.macropad-gear:hover {
+  background-color: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+}
+
+.macropad-list { spacing: 1px; }
+
+.macropad-item {
+  border-radius: 4px;
+  padding: 1px 4px;
+}
+
+.macropad-item:hover { background-color: rgba(255, 255, 255, 0.14); }
+
+.macropad-item-name {
+  color: #b8b8b8;
+  font-size: 9px;
+}
+
+.macropad-item-active {
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: bold;
+}
+
+.macropad-dot {
+  color: #ffffff;
+  font-size: 9px;
+  padding-left: 8px;
+}

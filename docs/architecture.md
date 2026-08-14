@@ -90,6 +90,18 @@ only reliable way to pin a widget to a screen corner on GNOME/Wayland.
   fixed in the stylesheet, so size changes do not require reloading the
   extension.
 
+### `macropad-window`
+
+A thin D-Bus client. The knob's rotation is bound to hidden GNOME hotkeys
+(`ctrl-alt-shift-f9/f10/f11`) whose command is `macropad-window prev|overview|
+next`; each call invokes `NextWindow`, `PrevWindow` or `ToggleOverview` on
+`org.flanshaw.MacropadHud`, exported by the HUD extension.
+
+The indirection is forced by Wayland: no client may raise or focus another
+application's window, so the actual switching has to happen inside GNOME Shell.
+The CLI exists only because GNOME's keybinding mechanism runs commands, not
+D-Bus calls.
+
 ### `macropad-daemon`
 
 A `Type=oneshot` user unit running `macropad-cycle --restore` at login. The
@@ -103,6 +115,18 @@ GNOME invokes the hotkey command directly, so nothing needs to sit resident.
 implemented and maintained upstream. Note that the installed version reads
 configs from **stdin**, not a file argument, so `core._run_tool` pipes the file
 in.
+
+**Window switching by creation order, not MRU.** `get_tab_list` returns
+windows most-recently-used first, which reorders itself after every activation:
+two detents in the same direction would land back on the starting window.
+Sorting by `get_stable_sequence()` gives a list that is stable across the walk,
+so a full turn visits every window exactly once. The switcher also trusts its
+own cursor for a second after activating, since a fast burst of detents can
+outrun `get_focus_window()` catching up.
+
+**No switcher popup.** Each detent activates its window outright rather than
+highlighting it in an OSD. The knob has no "release" event to commit a
+selection on, so there is nothing to close a popup with.
 
 **Labels inside the profile YAML.** Storing them in a sidecar file would have
 kept profiles pristine, but it doubles the number of files to keep in sync.

@@ -1,6 +1,6 @@
 [project]
 name = "macropad-manager"
-version = "0.2.1"
+version = "0.3.0"
 description = "Layer/profile manager for CH57x 3-key + 1-knob macropad"
 requires-python = ">=3.11"
 dependencies = ["PyYAML>=6.0"]
@@ -9,6 +9,7 @@ dependencies = ["PyYAML>=6.0"]
 macropad-manager = "macropad_manager.gui:main"
 macropad-cycle = "macropad_manager.cycle:main"
 macropad-status = "macropad_manager.status:main"
+macropad-window = "macropad_manager.window:main"
 
 [build-system]
 requires = ["setuptools>=68"]

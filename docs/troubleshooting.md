@@ -68,6 +68,35 @@ Changes to `hud.json`, profiles and labels need no reload at all. See
 4. Another application may have claimed the shortcut. Re-run the installer with
    a different one: `./install.sh '<Super>F9'`.
 
+## The knob does not switch windows
+
+Only the `BT GM CL` profile is set up for it, so first check the HUD shows
+`WINDOW` under the knob.
+
+Test the chain from the bottom up:
+
+```bash
+macropad-window next          # should move focus; needs the HUD extension
+gdbus introspect --session --dest org.flanshaw.MacropadHud \
+  --object-path /org/flanshaw/MacropadHud
+```
+
+- **`ServiceUnknown` from either command** — the extension is not running the
+  version that exports the switcher. Confirm with
+  `journalctl --user -b | grep "macropad-hud: enable"`; anything below 0.3.0
+  means the shell is still running cached code, and only a **re-login** fixes
+  it (see *Changes to the HUD have no effect*).
+- **`macropad-window next` works but the knob does nothing** — the hotkeys are
+  missing. Re-run `./install.sh`, then check:
+  ```bash
+  gsettings get org.gnome.settings-daemon.plugins.media-keys custom-keybindings
+  ```
+  It should list `macropad-window-prev`, `-overview` and `-next`.
+- **The knob jumps between the same two windows** — the profile is still on
+  `alt-tab`. That cannot work; use the `ctrl-alt-shift-f9/f10/f11` chords.
+- **Some windows are skipped** — only windows on the *current workspace* are
+  in the walk, and anything set to skip the taskbar is excluded.
+
 ## Upload fails
 
 Run it in a terminal to see the error:

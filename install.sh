@@ -49,22 +49,41 @@ if uuid not in lst:
                     '[' + ', '.join(f"'{x}'" for x in lst) + ']'], check=True)
 PY
 
-echo "==> Registering GNOME custom keybinding ($HOTKEY -> macropad-cycle)..."
 BASE=org.gnome.settings-daemon.plugins.media-keys
-KEYPATH=/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/macropad-cycle/
-current=$(gsettings get $BASE custom-keybindings)
-if [[ "$current" != *"$KEYPATH"* ]]; then
-  if [[ "$current" == "@as []" || "$current" == "[]" ]]; then
-    new="['$KEYPATH']"
-  else
-    new="${current%]*}, '$KEYPATH']"
+
+# register_hotkey <slug> <name> <command> <binding>
+register_hotkey() {
+  local slug=$1 name=$2 command=$3 binding=$4
+  local keypath=/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/$slug/
+  local current new
+  current=$(gsettings get $BASE custom-keybindings)
+  if [[ "$current" != *"$keypath"* ]]; then
+    if [[ "$current" == "@as []" || "$current" == "[]" ]]; then
+      new="['$keypath']"
+    else
+      new="${current%]*}, '$keypath']"
+    fi
+    gsettings set $BASE custom-keybindings "$new"
   fi
-  gsettings set $BASE custom-keybindings "$new"
-fi
-SCHEMA="$BASE.custom-keybinding:$KEYPATH"
-gsettings set "$SCHEMA" name 'Macropad cycle profile'
-gsettings set "$SCHEMA" command "$HOME/.local/bin/macropad-cycle"
-gsettings set "$SCHEMA" binding "$HOTKEY"
+  local schema="$BASE.custom-keybinding:$keypath"
+  gsettings set "$schema" name "$name"
+  gsettings set "$schema" command "$command"
+  gsettings set "$schema" binding "$binding"
+}
+
+echo "==> Registering GNOME custom keybinding ($HOTKEY -> macropad-cycle)..."
+register_hotkey macropad-cycle 'Macropad cycle profile' \
+  "$HOME/.local/bin/macropad-cycle" "$HOTKEY"
+
+# The knob emits these chords; nothing types them by hand, so they are picked
+# to be unlikely to collide with an application shortcut.
+echo "==> Registering knob window-switching hotkeys..."
+register_hotkey macropad-window-prev 'Macropad knob: previous window' \
+  "$HOME/.local/bin/macropad-window prev" '<Control><Alt><Shift>F9'
+register_hotkey macropad-window-overview 'Macropad knob: toggle overview' \
+  "$HOME/.local/bin/macropad-window overview" '<Control><Alt><Shift>F10'
+register_hotkey macropad-window-next 'Macropad knob: next window' \
+  "$HOME/.local/bin/macropad-window next" '<Control><Alt><Shift>F11'
 
 echo "==> Done. Press $HOTKEY to cycle profiles; run 'macropad-manager' for the GUI."
 echo "    Log out and back in to load the desktop HUD (GNOME Shell only scans"

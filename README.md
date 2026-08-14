@@ -26,6 +26,7 @@ CLI, and profiles are plain `ch57x-keyboard-tool` config files.
 | **`macropad-manager`** | GTK4/libadwaita GUI for editing, validating and uploading profiles |
 | **`macropad-cycle`** | CLI that switches profile and flashes the device — what `Super+Q` runs |
 | **`macropad-status`** | CLI that prints the current state as JSON (consumed by the HUD) |
+| **`macropad-window`** | CLI that drives window focus from the knob, via the HUD extension |
 | **`macropad-daemon`** | systemd `--user` oneshot that re-flashes the active profile at login |
 
 The HUD reads state and profiles straight from disk and watches them for
@@ -104,9 +105,32 @@ the `Super+Q` custom keybinding via `gsettings`.
 - **`macropad-cycle --set media`** — jump to a named profile from a script.
 - **`macropad-cycle --restore`** — re-flash the active profile (run at login).
 - **`macropad-status`** — print active profile, bindings and labels as JSON.
+- **`macropad-window next|prev|overview`** — move window focus (see below).
 
 Run `ch57x-keyboard-tool show-keys` for the list of valid binding names — note
 that media keys are `prev` / `play` / `next`, not `prevsong` and friends.
+
+### Switching windows with the knob
+
+The `BT GM CL` profile uses the knob to walk between open windows: rotate to
+move focus one window at a time, press to toggle the Activities overview.
+
+`alt-tab` cannot do this. The macropad releases every modifier between detents,
+so GNOME's switcher — which needs Alt held down — just flips between the two
+most recent windows however far you turn. Instead:
+
+```
+knob CCW   -> ctrl-alt-shift-f9   ┐   GNOME custom      ┐  macropad-window   ┐  D-Bus to the
+knob press -> ctrl-alt-shift-f10  ├─> keybindings       ├─ prev/overview/    ├─ HUD extension,
+knob CW    -> ctrl-alt-shift-f11  ┘                     ┘  next              ┘  which moves focus
+```
+
+The extension does the switching because on Wayland only GNOME Shell may move
+focus between windows. It orders windows by creation, not most-recently-used,
+so a full turn visits every window once instead of oscillating between two.
+
+`install.sh` registers those three chords as hidden hotkeys. To use the knob
+this way in another profile, set its `ccw` / `press` / `cw` to the same chords.
 
 ---
 
@@ -180,6 +204,7 @@ src/macropad_manager/       Python package
     gui.py                  GTK4/libadwaita editor
     cycle.py                macropad-cycle entry point
     status.py               macropad-status entry point
+    window.py               macropad-window entry point
 extension/                  GNOME Shell extension (GJS)
     macropad-hud@flanshaw.org/
 systemd/                    user unit for login restore
@@ -199,6 +224,8 @@ install.sh                  one-shot installer
   `ReloadExtension` D-Bus method and Wayland cannot restart the shell in place.
   See [docs/development.md](docs/development.md).
 - The HUD renders one knob, so it shows whichever knob action carries a label.
+- **Knob window switching walks the current workspace only**, and needs the HUD
+  extension enabled — the knob's hotkeys are inert without it.
 
 ---
 

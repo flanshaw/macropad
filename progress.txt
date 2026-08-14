@@ -5,3 +5,4 @@
 2026-08-14 Prepared the repo for publication with a full README, architecture/configuration/development/troubleshooting docs, MIT licence, gitignore and aligned 0.2.0 versions.
 2026-08-14 Fixed the HUD PROFILES heading clipping by disabling label ellipsis, since St ignores CSS letter-spacing when measuring natural width.
 2026-08-14 Published the project to github.com/flanshaw/macropad with HUD and editor screenshots in the README.
+2026-08-14 Added knob-driven window switching: the HUD extension now exports a D-Bus window switcher, driven by a new macropad-window CLI and hidden hotkeys, wired into the "BT GM CL" profile.

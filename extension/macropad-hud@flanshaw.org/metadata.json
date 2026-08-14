@@ -3,6 +3,6 @@
   "name": "Macropad HUD",
   "description": "Compact desktop widget showing the active macropad profile, its key/knob bindings, and the profile cycle list. Click a profile to switch; gear opens the full editor.",
   "shell-version": ["48", "49", "50"],
-  "version-name": "0.2.1",
+  "version-name": "0.3.0",
   "url": "https://github.com/flanshaw/macropad"
 }

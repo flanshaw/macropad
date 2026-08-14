@@ -1,6 +1,7 @@
 import Clutter from 'gi://Clutter';
 import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
+import Meta from 'gi://Meta';
 import Pango from 'gi://Pango';
 import St from 'gi://St';
 
@@ -12,7 +13,7 @@ const STATE_FILE = GLib.build_filenamev([CONFIG_DIR, 'state.json']);
 const PROFILES_DIR = GLib.build_filenamev([CONFIG_DIR, 'profiles']);
 const HUD_CONFIG = GLib.build_filenamev([CONFIG_DIR, 'hud.json']);
 const MARGIN = 12;
-const HUD_VERSION = '0.2.1';
+const HUD_VERSION = '0.3.0';
 
 // Where the HUD sits in the stack, read from hud.json at runtime:
 //   'top'     - floats above normal windows, hidden by fullscreen apps.
@@ -211,6 +212,74 @@ class Hud {
     }
 }
 
+// ------------------------------------------------------- window switching ----
+
+const DBUS_NAME = 'org.flanshaw.MacropadHud';
+const DBUS_PATH = '/org/flanshaw/MacropadHud';
+const DBUS_IFACE = `
+<node>
+  <interface name="org.flanshaw.MacropadHud">
+    <method name="NextWindow"/>
+    <method name="PrevWindow"/>
+    <method name="ToggleOverview"/>
+  </interface>
+</node>`;
+
+// How long an activation we just requested is trusted as the cursor position,
+// in preference to whatever the display currently reports as focused.
+const CURSOR_GRACE_MS = 1000;
+
+/** Walks the open windows one step per call.
+ *
+ *  The macropad releases every modifier between detents, so alt-tab cannot be
+ *  used: GNOME's switcher needs Alt held down and a bare press just toggles
+ *  the two most recent windows. Instead each detent activates the next window
+ *  outright, walking a list ordered by stable_sequence (creation order) rather
+ *  than MRU - an MRU list reshuffles itself as we go, so rotating twice would
+ *  land back where it started.
+ */
+class WindowSwitcher {
+    constructor() {
+        this._cursor = null;
+        this._cursorAt = 0;
+    }
+
+    destroy() {
+        this._cursor = null;
+    }
+
+    _windows() {
+        const workspace = global.workspace_manager.get_active_workspace();
+        return global.display
+            .get_tab_list(Meta.TabList.NORMAL, workspace)
+            .filter(w => !w.is_skip_taskbar())
+            .sort((a, b) => a.get_stable_sequence() - b.get_stable_sequence());
+    }
+
+    /** Where the walk starts: the window we just moved to if that activation
+     *  is still in flight, otherwise whatever actually has focus. */
+    _current(windows) {
+        const fresh = GLib.get_monotonic_time() / 1000 - this._cursorAt < CURSOR_GRACE_MS;
+        if (fresh && this._cursor && windows.includes(this._cursor))
+            return this._cursor;
+        const focused = global.display.get_focus_window();
+        return windows.includes(focused) ? focused : null;
+    }
+
+    step(delta) {
+        const windows = this._windows();
+        if (windows.length === 0) return;
+
+        const current = this._current(windows);
+        const from = current ? windows.indexOf(current) : -delta;
+        const target = windows[(from + delta + windows.length) % windows.length];
+
+        this._cursor = target;
+        this._cursorAt = GLib.get_monotonic_time() / 1000;
+        target.activate(global.get_current_time());
+    }
+}
+
 export default class MacropadHudExtension extends Extension {
     enable() {
         log(`macropad-hud: enable() version ${HUD_VERSION}`);
@@ -225,6 +294,8 @@ export default class MacropadHudExtension extends Extension {
             () => this._reposition());
         this._reposition();
 
+        this._exportSwitcher();
+
         this._monitors = [];
         this._watch(STATE_FILE, false);
         this._watch(PROFILES_DIR, true);
@@ -232,7 +303,40 @@ export default class MacropadHudExtension extends Extension {
         this._refresh();
     }
 
+    /** The knob's hotkeys land in macropad-window, which calls these methods;
+     *  only the shell can move window focus on Wayland. */
+    _exportSwitcher() {
+        this._switcher = new WindowSwitcher();
+        this._dbus = Gio.DBusExportedObject.wrapJSObject(DBUS_IFACE, {
+            NextWindow: () => this._switcher?.step(1),
+            PrevWindow: () => this._switcher?.step(-1),
+            ToggleOverview: () => Main.overview.toggle(),
+        });
+        try {
+            this._dbus.export(Gio.DBus.session, DBUS_PATH);
+            this._nameId = Gio.bus_own_name(
+                Gio.BusType.SESSION, DBUS_NAME, Gio.BusNameOwnerFlags.REPLACE,
+                null, null, null);
+        } catch (e) {
+            logError(e, 'macropad-hud: cannot export the window switcher');
+        }
+    }
+
+    _unexportSwitcher() {
+        if (this._nameId) Gio.bus_unown_name(this._nameId);
+        this._nameId = null;
+        try {
+            this._dbus?.unexport();
+        } catch (e) {
+            // Already gone, e.g. the session bus disappeared before us.
+        }
+        this._dbus = null;
+        this._switcher?.destroy();
+        this._switcher = null;
+    }
+
     disable() {
+        this._unexportSwitcher();
         if (this._sizeId) this._hud?.actor.disconnect(this._sizeId);
         if (this._monitorsId) Main.layoutManager.disconnect(this._monitorsId);
         if (this._workAreasId) global.display.disconnect(this._workAreasId);
